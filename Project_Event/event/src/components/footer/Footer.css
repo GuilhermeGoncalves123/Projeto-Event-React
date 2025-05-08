@@ -1,8 +1,10 @@
-footer {
-    background-color: #c23b4b;
-    color: white;
-    text-align: center;
-    padding: 15px 0;
-    font-size: 14px;
-}
+footer{
+    color:black;
 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+   
+    height: 40px;
+}

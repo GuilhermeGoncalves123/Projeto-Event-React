@@ -1,13 +1,14 @@
+//chamar as telas do index.js
 import './App.css';
-import Login from "./pages/login/Login";
+import Rotas from "./routes/Routes"
 
 function App() {
   return (
     <>
-      <Login/>
+    <Rotas/>
     </>
-  )
-}
 
-//qualquer um pode acessar o app, por causa do comando abaixo
+  );
+}
+//export : exporta o codigo de forma padrao
 export default App;

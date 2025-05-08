@@ -1,22 +1,27 @@
-import "./Header.css"
- import logo from "../../assets/img/logo.svg";
- const Header = () => {
-     return (
-         <header>
-             <div className="layout_grid">
-                 <Link to="/"> 
-                 <img src={logo} alt="Logo do Event" />
-                 </Link>
-                 <nav className="nav_header"> 
-                     <Link className = "link_header" to="/Home">Home</Link>
-                     <Link className = "link_header" to="/Eventos">Eventos</Link>
-                     <Link className = "link_header" to="/Usuarios">Usuários</Link>
-                     <Link className = "link_header" to="/Contato">Contato</Link>
-                     <Link className = "link_header" to="/Administrador">Adiministrador</Link>
-                 </nav>
-             </div>
-         </header>
-     )
- }
+import "./Header.css";
+import Logo from "../../assents/img/logo1.svg"
+import ADM from "../../assents/img/Admin.png"
+const Header = () => {
+    return (
+        <header>
+            <link rel="stylesheet" href="https://use.typekit.net/pam4ubo.css"></link>
 
- export default Header;
+            <div className="layout_grid header-header">
+                <img className="loginImg" src={Logo} alt="" />
+                <nav className="nav_header">
+                    <a href="" className="link-header">Home</a>
+                    <a href="" className="link-header">Eventos</a>
+                    <a href="" className="link-header">Usuários</a>
+                    <a href="" className="link-header">Contatos</a>
+                </nav>
+                <nav className="navas_header">
+                    <div className="adm_info">
+                        <a href="#" className="link-header">Administrador</a>
+                        <img src={ADM} alt="Foto do administrador" />
+                    </div>
+                </nav>
+            </div>
+        </header>
+    )
+}
+export default Header;
