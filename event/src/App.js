@@ -1,8 +1,9 @@
 import './App.css';
-import Rotas from './Routes/Routes.js';
+import Rotas from './Routes/Routes';
 
 function App() {
   return (
+    
     <>
     <Rotas/>
     </>

@@ -1,15 +1,35 @@
+import { useEffect, useState } from "react";
+import api from "../../services/Services";
+import Modal from "../../components/modal/Modal.jsx"
 import "./ListagemEventos.css"
 import Header from "../../components/header/Header";
 import Footer from "../../components/footer/Footer";
 import Comentario from "../../assets/img/Comentario.svg"
 import Toggle from "../../components/toggle/Toggle";
+import Descricao from "../../assets/img/Descricao.svg"
 
-const ListagemEventos = () => {
+const ListagemEventos = (props) => {
+    const [listaEventos, setListaEventos] = useState([]);
+
+    async function listarEventos() {
+        try {
+            const resposta = await api.get("Eventos");
+
+            setListaEventos(resposta.data);
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    useEffect(() => {
+        listarEventos();
+    }, [])
+
     return (
         <>
-            <Header 
-            user="Aluno"
-            botao_logar="none"
+            <Header
+                user="Aluno"
+                botao_logar="none"a
             />
             <main>
                 <section className="layout_grid listagem_section">
@@ -19,11 +39,9 @@ const ListagemEventos = () => {
                     </div>
 
                     <div className="listagem_eventos">
-                        <select name="eventos" id="">
+                        <select name="eventos">
                             <option value="" disabled selected>Todos os Eventos</option>
-                            <option value="">XXXXXXXX</option>
-                            <option value="">XXXXXXXX</option>
-                            <option value="">XXXXXXXX</option>
+                            <option value="">xxxxxxxx</option>
                         </select>
                     </div>
 
@@ -31,31 +49,42 @@ const ListagemEventos = () => {
                         <table>
                             <tr className="list_tabela">
                                 <th>Titulo</th>
+                                <th>Data do Evento</th>
                                 <th>Tipo Evento</th>
+                                <th>Descrição</th>
                                 <th>Comentários</th>
                                 <th>Participar</th>
                             </tr>
+                            
+                            
 
                             <tr className="list_presenca">
-                                <td data-cell="Titulo">Campeonato nacional de digitação do paraguai com o presidente bolsonaro</td>
-                                <td data-cell="Tipo Evento">Tipo Evento</td>
-                                <td data-cell="Comentario"><img src={Comentario} alt="Comentário" /></td>
-                                <td data-cell="Presenca"><Toggle/></td>
-                            </tr>
+                                <td>Moderação Familia Ballas</td>
+                                <td>07/06/2025</td>
+                                <td>Vivencia Pura</td>
+                                <td>
+                                    <button className="icon">
+                                        <img src={Descricao} alt="" />
+                                    </button>
+                                </td>
 
-                            <tr className="list_presenca">
-                                <td data-cell="Titulo">Campeonato nacional de digitação do paraguai com o presidente bolsonaro</td>
-                                <td data-cell="Tipo Evento">Tipo Evento</td>
-                                <td data-cell="Comentario"><img src={Comentario} alt="Comentário" /></td>
-                                <td data-cell="Presenca"><Toggle/></td>
+                                    <td>
+                                    <button className="icon">
+                                        <img src={Comentario} alt="" />
+                                    </button>
+                                </td>
+                                
+                                
+                                <td data-cell="Presenca"><Toggle /></td>
+
                             </tr>
                         </table>
                     </div>
                 </section>
             </main>
-            <Footer
-            visibilidade="none"
+            <Footer visibilidade="none"
             />
+            <Modal/>
         </>
     )
 }
