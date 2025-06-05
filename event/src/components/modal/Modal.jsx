@@ -4,6 +4,7 @@ import imgDeletar from"../../assets/img/Excluir.svg";
 
 const Modal = (props) => {
   const [comentarios, setComentarios] = useState([])
+  const [novoComentario, setNovoComentario] =
 async function listarComentarios() {
   try {
     await api.get(`comentariosEventos/ListarSomenteExibe?id=${props.idEvento}`);
@@ -18,9 +19,28 @@ async function listarComentarios() {
 useEffect(() => {
   listarComentarios
 }, [])
+
 async function cadastrarComentario() {
+  try {
+    await api.post("ComentariosEventos",(
+      idUsuario = usuarioid,
+      idEvento = props.idEvento,
+      descricao = comentarios
+    ));
+  } catch (error) {
+    console.log (error)
+  }
   
 }
+
+async function deletarComentarios(idComentario) {
+  try {
+    await api.delete(`ComentarioEventos/${idComentario}`)
+  } catch (error) {
+    console.log(error)
+  }
+}
+
 
   return (<>
     <div className="model-overlay" onClick={props.fecharModal}></div>
@@ -35,7 +55,8 @@ async function cadastrarComentario() {
           <div key={item.idComentarioEvento}>
             <strong> {item.usuario.nomeUsuario}
             </strong>
-            <img src={imgDeletar} alt="Deletar"/>
+            <img src={imgDeletar} alt="Deletar"
+            onClick={() => deletarComentarios(item.idComentarioEvento)}/>
             <p>{item.descricao}</p>
             <hr />
           </div>
@@ -44,8 +65,10 @@ async function cadastrarComentario() {
         <div>
           <input type="text"
           placeholder="escreva seu Comentario..."
+          value={novoComentario}
+          onChange={(e)=> setNovoComentario(e.target.value)}
            />
-           <button>
+           <button onClick={() => cadastrarComentario(novoComentario)}>
             Cadastrar
            </button>
         </div>

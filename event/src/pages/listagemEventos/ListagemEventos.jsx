@@ -7,23 +7,48 @@ import Footer from "../../components/footer/Footer";
 import Comentario from "../../assets/img/Comentario.svg"
 import Toggle from "../../components/toggle/Toggle";
 import Descricao from "../../assets/img/Descricao.svg"
+import Swal from "sweetalert2";
 
 const ListagemEventos = (props) => {
     const [listaEventos, setListaEventos] = useState([]);
     const [tipoModal, setTipoModel] = useState("");
     const [dadosModal, setDadosModel] = useState([]);
     const [modalAberto, setModalAberto] = useState(false);
+    const {filtroData, setFiltroData} = useState(["todos"])
 }
-
-    async function listarEventos() {
+    const [usuarioid, setUsuarioid] = useState ("")
+    async function listarEventos() {  
         try {
             const resposta = await api.get("Eventos");
+            const todosOsEventos = resposta.data;
+
+            const respostaPresenca = await api.get("PresencaEventos/ListarMinha/"+usuarioD)
+            const minhasPresencas = respostaPresenca.data;
+            const eventosComPresencas = todosOsEventos.map((atualEvento) => {
+                const presenca = minhasPresencas.find(p => p.idEvento
+                    === atualEvento.idEvento);
+
+                    return(
+                        atualEvento,
+                        possuiPresenca = presenca?.situacao === true,
+                        idPresenca = presenca?.idPresencaEvento || null
+                    )
+
+            })
+        
 
             setListaEventos(resposta.data);
+
         } catch (error) {
-            console.log(error);
+            console.log(`informacoes de todos os eventos`);
+            console.log()
+            console.log(`informacoes de eventos com presenca`);
+            console.log()
+            console.log(`informacoes de todos os eventos com presenca`);
+            console.log(eventosComPresencas);
         }
-    }
+    
+
 
     useEffect(() => 
         function abrirModal(tipo, dados){
@@ -38,6 +63,47 @@ const ListagemEventos = (props) => {
          tipoModal({});
          dadosModal("");
 
+        }
+        
+
+        async function manipularPresenca(idEvento, presenca, idPresenca) {
+            try {
+                if(presenca && idPresenca !=""){
+                    await api.put(`presencaEventos/${idPresenca}`),
+                    {situacao: false};
+                    Swal.fire(`removido!`, `Sua presenca foi removida.`, `Sucess`);
+
+                }else if (idPresenca != ""){
+                     await api.put(`presencaEventos/${idPresenca}`),
+                    {situacao: true};
+                    Swal.fire(`Confirmado!`, `Sua presenca foi comfirmada.`, `Sucess`);
+
+
+                }else{
+                await api.post("presencaEventos",{situacao: true, idUsuario: usuarioid, idEvento: idEvento});
+                 Swal.fire(`Confirmado!`, `Sua presenca foi comfirmada.`, `Sucess`);
+
+                }
+                
+            } catch (error) {
+                
+            }
+            function filtrarEventos(){
+                const hoje = new Date();
+
+                return listaEventos.filter(evento => {
+                    const dataEvento = new Date(evento.dataEvento);
+                    if (filtroData.includes("todos")) return true;
+                    if (filtroData.includes("futuros") && dataEvento > hoje)
+                        return true;
+                    if (filtroData.includes("passados") && dataEvento > hoje)
+                        return true;
+
+                    return false;
+                });
+
+            }
+            
         }
 
         listarEventos();
@@ -55,7 +121,11 @@ const ListagemEventos = (props) => {
                         <h1>Eventos</h1>
                         <hr />
                     </div>
-
+                         <select onChange= {(e) => setFiltroData([e.target.value])}>
+                        <option value="todos" selected>Todos os eventos</option> 
+                        <option value="Futuros">Somente futuros</option>
+                        <option value="passados">Somente passados</option>
+                    </select>
                     <div className="listagem_eventos">
                         <select name="eventos">
                             <option value="" disabled selected>Todos os Eventos</option>
@@ -117,6 +187,6 @@ const ListagemEventos = (props) => {
             
             
     )
+    }
 
-
-export default ListagemEventos;
+export default ListagemEventos
