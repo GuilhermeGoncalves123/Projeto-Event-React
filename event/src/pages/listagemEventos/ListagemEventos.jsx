@@ -10,6 +10,10 @@ import Descricao from "../../assets/img/Descricao.svg"
 
 const ListagemEventos = (props) => {
     const [listaEventos, setListaEventos] = useState([]);
+    const [tipoModal, setTipoModel] = useState("");
+    const [dadosModal, setDadosModel] = useState([]);
+    const [modalAberto, setModalAberto] = useState(false);
+}
 
     async function listarEventos() {
         try {
@@ -21,7 +25,21 @@ const ListagemEventos = (props) => {
         }
     }
 
-    useEffect(() => {
+    useEffect(() => 
+        function abrirModal(tipo, dados){
+         setModalAberto(true)   
+         tipoModal(tipo)
+         dadosModal(dados)
+
+        })
+          useEffect(() => {
+        function fecharModal(tipo, dados){
+         setModalAberto(false);   
+         tipoModal({});
+         dadosModal("");
+
+        }
+
         listarEventos();
     }, [])
 
@@ -63,13 +81,15 @@ const ListagemEventos = (props) => {
                                 <td>07/06/2025</td>
                                 <td>Vivencia Pura</td>
                                 <td>
-                                    <button className="icon">
+                                    <button className="icon" onClick={() => abrirModal("descricaoEvento", 
+                                        item.Descricao)}>
                                         <img src={Descricao} alt="" />
                                     </button>
                                 </td>
 
                                     <td>
-                                    <button className="icon">
+                                    <button className="icon" onClick={() => abrirModal("comentarios", 
+                                        {idEvento: item.idEvento})}>
                                         <img src={Comentario} alt="" />
                                     </button>
                                 </td>
@@ -84,9 +104,19 @@ const ListagemEventos = (props) => {
             </main>
             <Footer visibilidade="none"
             />
-            <Modal/>
+            {modalAberto && (
+            <Modal
+             titulo = {tipoModel == "descricaoEvento" ? "Descrição do evento" : "Comentarios"}
+             tipoModal = {tipoModal}
+             idEvento = {dadosModal.idEvento}
+             descricao = {dadosModal.descricao}
+             fecharModal = {fecharModal}
+             />
+            )}
         </>
+            
+            
     )
-}
+
 
 export default ListagemEventos;
