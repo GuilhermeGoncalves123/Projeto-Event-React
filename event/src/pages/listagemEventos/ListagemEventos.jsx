@@ -1,192 +1,207 @@
-import { useEffect, useState } from "react";
-import api from "../../services/Services";
-import Modal from "../../components/modal/Modal.jsx"
 import "./ListagemEventos.css"
+import { useEffect, useState } from "react";
 import Header from "../../components/header/Header";
 import Footer from "../../components/footer/Footer";
-import Comentario from "../../assets/img/Comentario.svg"
+import comentario from "../../assets/img/comentario.svg";
 import Toggle from "../../components/toggle/Toggle";
-import Descricao from "../../assets/img/Descricao.svg"
+import descricao from "../../assets/img/descricao2.svg";
+
+import Modal from "../../components/modal/Modal";
+import api from "../../Services/services";
+
+import { format } from "date-fns";
 import Swal from "sweetalert2";
 
 const ListagemEventos = (props) => {
-    const [listaEventos, setListaEventos] = useState([]);
-    const [tipoModal, setTipoModel] = useState("");
-    const [dadosModal, setDadosModel] = useState([]);
-    const [modalAberto, setModalAberto] = useState(false);
-    const {filtroData, setFiltroData} = useState(["todos"])
-}
-    const [usuarioid, setUsuarioid] = useState ("")
-    async function listarEventos() {  
+
+    const [listaEvento, setListaEvento] = useState([])
+    // const [verEvento, setVerEventos] = useState([])
+    const [tipoModal, setTipoModal] = useState("")
+    const [dadosModal, setDadosModal] = useState([])
+
+    const [modalAberto, setModalAberto] = useState(false)
+
+    const [filtro, setFiltro] = useState(["todos"])
+    const [usuarioId, setUsuarioId] = useState("")
+
+    async function listarEventos() {
         try {
-            const resposta = await api.get("Eventos");
+            //pego o eventos em geral
+            const resposta = await api.get("eventos");
             const todosOsEventos = resposta.data;
+            const respostaPresencas = await api.get("PresencasEventos/ListarMinhas/" + usuarioId.idUsuario  )
+            const minhasPresencas = respostaPresencas.data;
 
-            const respostaPresenca = await api.get("PresencaEventos/ListarMinha/"+usuarioD)
-            const minhasPresencas = respostaPresenca.data;
             const eventosComPresencas = todosOsEventos.map((atualEvento) => {
-                const presenca = minhasPresencas.find(p => p.idEvento
-                    === atualEvento.idEvento);
+                const presenca = minhasPresencas.find(p => p.idEvento === atualEvento.idEvento);
+                return {
+                    ...atualEvento,
 
-                    return(
-                        atualEvento,
-                        possuiPresenca = presenca?.situacao === true,
-                        idPresenca = presenca?.idPresencaEvento || null
-                    )
-
+                    IdPresencaEvento: presenca?.idPresencaEvento || null,
+                    possuiPresenca: presenca?.situacao === true,
+                }
             })
-        
 
-            setListaEventos(resposta.data);
+            setListaEvento(eventosComPresencas)
+
 
         } catch (error) {
-            console.log(`informacoes de todos os eventos`);
-            console.log()
-            console.log(`informacoes de eventos com presenca`);
-            console.log()
-            console.log(`informacoes de todos os eventos com presenca`);
-            console.log(eventosComPresencas);
+            console.error("Erro ao buscar eventos:", error);
         }
-    
+    }
 
 
-    useEffect(() => 
-        function abrirModal(tipo, dados){
-         setModalAberto(true)   
-         tipoModal(tipo)
-         dadosModal(dados)
-
-        })
-          useEffect(() => {
-        function fecharModal(tipo, dados){
-         setModalAberto(false);   
-         tipoModal({});
-         dadosModal("");
-
-        }
-        
-
-        async function manipularPresenca(idEvento, presenca, idPresenca) {
-            try {
-                if(presenca && idPresenca !=""){
-                    await api.put(`presencaEventos/${idPresenca}`),
-                    {situacao: false};
-                    Swal.fire(`removido!`, `Sua presenca foi removida.`, `Sucess`);
-
-                }else if (idPresenca != ""){
-                     await api.put(`presencaEventos/${idPresenca}`),
-                    {situacao: true};
-                    Swal.fire(`Confirmado!`, `Sua presenca foi comfirmada.`, `Sucess`);
-
-
-                }else{
-                await api.post("presencaEventos",{situacao: true, idUsuario: usuarioid, idEvento: idEvento});
-                 Swal.fire(`Confirmado!`, `Sua presenca foi comfirmada.`, `Sucess`);
-
-                }
-                
-            } catch (error) {
-                
-            }
-            function filtrarEventos(){
-                const hoje = new Date();
-
-                return listaEventos.filter(evento => {
-                    const dataEvento = new Date(evento.dataEvento);
-                    if (filtroData.includes("todos")) return true;
-                    if (filtroData.includes("futuros") && dataEvento > hoje)
-                        return true;
-                    if (filtroData.includes("passados") && dataEvento > hoje)
-                        return true;
-
-                    return false;
-                });
-
-            }
-            
-        }
-
+    useEffect(() => {
         listarEventos();
+        console.log(error)
     }, [])
+
+    function abrirModal(tipo, dados) {
+        //Tipo de modal, dados do modal 
+        setModalAberto(true)
+        setDadosModal(dados);
+        setTipoModal(tipo);
+    }
+
+    function fecharModal() {
+        setModalAberto(false);
+        setDadosModal({})
+        setTipoModal("")
+    }
+
+    async function manipularPresenca(idEvento, presenca, idPresenca) {
+
+        try {
+            if (presenca && idPresenca != "") {
+                //atualizacao: situacao para FALSE
+                await api.put(`PresencasEventos/${idPresenca}`, { situacao: false });
+                Swal.fire('Removido!', 'Sua presenca foi removida.', 'success');
+            } else if (idPresenca != "") {
+                //atualizacao: situacao para TRUE
+                await api.put(`PresencasEventos/${idPresenca}`, { situacao: true });
+                Swal.fire('Confirmado!', 'Sua presenca foi confirmada.', 'success');
+            } else {
+                //cadastrar uma nova presenca
+                await api.post("PresencasEventos", { situacao: true, idUsuario: usuarioId, idEvento: idEvento });
+                Swal.fire('Confirmado!', 'Sua presenca foi confirmada.', 'success');
+            }
+
+            listarEventos()
+        } catch (error) {
+            console.log(error);
+
+        }
+    }
+
+
+
+
+    function filtrarEventos() {
+        const hoje = new Date();
+        return listaEvento.filter(evento => {
+            const dataEvento = new Date(evento.dataEvento);
+
+            if (filtro.includes("todos")) return true;
+            if (filtro.includes("futuros") && dataEvento > hoje) return true;
+            if (filtro.includes("passados") && dataEvento < hoje) return true;
+            return false;
+        })
+    }
 
     return (
         <>
-            <Header
-                user="Aluno"
-                botao_logar="none"a
-            />
-            <main>
-                <section className="layout_grid listagem_section">
-                    <div className="titulo_listagem">
-                        <h1>Eventos</h1>
-                        <hr />
-                    </div>
-                         <select onChange= {(e) => setFiltroData([e.target.value])}>
-                        <option value="todos" selected>Todos os eventos</option> 
-                        <option value="Futuros">Somente futuros</option>
-                        <option value="passados">Somente passados</option>
-                    </select>
-                    <div className="listagem_eventos">
-                        <select name="eventos">
-                            <option value="" disabled selected>Todos os Eventos</option>
-                            <option value="">xxxxxxxx</option>
+            <Header adm="Alunos" />
+            <main className="listaEventos layout_grid">
+                <section className="listagemEventos" id="">
+                    <h1>Eventos</h1>
+                    <hr />
+
+
+                    <div className="tabela_eventos">
+
+                        <select className="select"
+                            value={props.valorSelect}
+                            onChange={(e) => setFiltro(e.target.value)}
+                        >
+                            <option value="Todos" selected>Todos os Eventos</option>
+
+                            <option value="Futuros" selected>Somente Futuros</option>
+
+                            <option value="Passados" selected>Somente Passados</option>
+
+
                         </select>
-                    </div>
 
-                    <div className="list">
                         <table>
-                            <tr className="list_tabela">
-                                <th>Titulo</th>
-                                <th>Data do Evento</th>
-                                <th>Tipo Evento</th>
-                                <th>Descrição</th>
-                                <th>Comentários</th>
-                                <th>Participar</th>
-                            </tr>
-                            
-                            
+                            <thead>
+                                <tr className="table_eventos">
+                                    <th>Titulo</th>
+                                    <th>Data do Evento</th>
+                                    <th>Tipo Eventos</th>
+                                    <th>Descriçao</th>
+                                    <th>Comentarios</th>
+                                    <th>Participar</th>
+                                </tr>
+                            </thead>
 
-                            <tr className="list_presenca">
-                                <td>Moderação Familia Ballas</td>
-                                <td>07/06/2025</td>
-                                <td>Vivencia Pura</td>
-                                <td>
-                                    <button className="icon" onClick={() => abrirModal("descricaoEvento", 
-                                        item.Descricao)}>
-                                        <img src={Descricao} alt="" />
-                                    </button>
-                                </td>
+                            <tbody>
+                                {listaEvento.length > 0 ? (
+                                    filtrarEventos() && filtrarEventos().map((item) => (
 
-                                    <td>
-                                    <button className="icon" onClick={() => abrirModal("comentarios", 
-                                        {idEvento: item.idEvento})}>
-                                        <img src={Comentario} alt="" />
-                                    </button>
-                                </td>
-                                
-                                
-                                <td data-cell="Presenca"><Toggle /></td>
+                                        <tr key={item.IdPresencaEvento} className="item_listaEventos">
+                                            <td data-cell="Nome">{item.nomeEvento}</td>
+                                            <td data-cell="Data">{format(item.dataEvento, "dd/MM/yyyy")}</td>
+                                            <td data-cell="Tipo Evento">{item.tiposEvento.tituloTipoEvento}</td>
 
-                            </tr>
+                                            <td data-cell="descricao">
+                                                <button className="icon" onClick={() =>
+                                                    abrirModal("descricaoEvento", { descricao: item.descricao })}>
+                                                    <img src={descricao} alt="descricao" />
+                                                </button></td>
+
+                                            <td data-cell="comentario">
+                                                <button className="icon" onClick={() => abrirModal("comentarios", { idEvento: item.idEvento })}>
+                                                    <img src={comentario} alt="" />
+                                                </button>
+                                            </td>
+
+                                            <td data-cell="botao"><Toggle presenca={item.possuiPresenca}
+                                                manipular={() => manipularPresenca(item.IdEvento, item.possuiPresenca, item.IdPresencaEvento)
+                                                } /></td>
+                                        </tr>
+                                    )
+                                    )
+                                )
+                                    : <p>Nao ah eventos</p>
+
+                                }
+                            </tbody>
+
+
                         </table>
                     </div>
+
+
                 </section>
             </main>
-            <Footer visibilidade="none"
-            />
-            {modalAberto && (
-            <Modal
-             titulo = {tipoModel == "descricaoEvento" ? "Descrição do evento" : "Comentarios"}
-             tipoModal = {tipoModal}
-             idEvento = {dadosModal.idEvento}
-             descricao = {dadosModal.descricao}
-             fecharModal = {fecharModal}
-             />
-            )}
-        </>
-            
-            
-    )
-    }
 
-export default ListagemEventos
+            <Footer />
+
+            {modalAberto && (
+                <Modal
+                    titulo={tipoModal == "descricaoEvento" ? "Descriçao do Evento" : "Comentarios"}
+                    tipoModel={tipoModal}
+                    idEvento={dadosModal.idEvento}
+                    descricao={dadosModal.descricao}
+                    fecharModal={fecharModal}
+                />
+            )}
+
+        </>
+    )
+
+}
+export default ListagemEventos;
+
+
+

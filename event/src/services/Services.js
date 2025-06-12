@@ -1,8 +1,9 @@
 import axios from "axios";
 
-const apiPorta = "5289";
+const apiPorta = "7118";
 
-const apiLocal = `http://localhost:${apiPorta}/api/`;
+//endereço da api
+const apiLocal = `https://localhost:${apiPorta}/api/`;
 
 const api = axios.create({
     baseURL: apiLocal

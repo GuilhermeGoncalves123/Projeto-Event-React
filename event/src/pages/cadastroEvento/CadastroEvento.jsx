@@ -1,21 +1,25 @@
-import { useEffect, useState } from "react";
-import api from "../../services/Services";
-
-import Imagem from "../../assets/img/CadastroEvento.svg"
-import Cadastro from "../../components/cadastro/Cadastro";
-import Footer from "../../components/footer/Footer";
+import "./CadastroEvento.css";
+import { Fragment, useEffect, useState } from "react";
 import Header from "../../components/header/Header";
-import Lista from "../../components/lista/Lista";
-import Swal from "sweetalert2";
+import Footer from "../../components/footer/Footer";
+import Cadastro from "../../components/cadastro/Cadastro";
+import Listagem from "../../components/lista/Lista";
+import banner from "../../assets/img/cadastroeventos.svg"
 
-const CadastroEvento = () => {
-    const [listaEvento, setListaEvento] = useState([]);
-    const [listaTipoEvento, setlistaTipoEvento] = useState([]);
-    const [instituicoes, setInstituicoes] = useState("BE86171E-FD1E-40DC-9BA6-85313340FCEA");
-    const [tipoEvento, setTipoEvento] = useState("");
+
+import Swal from 'sweetalert2'
+import api from "../../Services/services";
+
+
+const Cadastrar = () => {
+    const [evento, setEvento] = useState("");
     const [dataEvento, setDataEvento] = useState("");
     const [descricao, setDescricao] = useState("");
-    const [evento, setEvento] = useState("");
+    const [instituicao, setInstituicao] = useState("23E29B9F-96F8-45DD-9046-81561687FC08");
+    const [tipoEvento, setTipoEvento] = useState("");
+    const [listaTipoEvento, setListaTipoEvento] = useState([])
+    const [listaEvento, setListaEvento] = useState([])
+    const [excluirEvento, setExcluirEvento] = useState([])
 
     function alertar(icone, mensagem) {
         const Toast = Swal.mixin({
@@ -37,83 +41,81 @@ const CadastroEvento = () => {
 
     async function listarTipoEvento() {
         try {
-            const resposta = await api.get("TiposEventos");
-
-            setlistaTipoEvento(resposta.data)
+            const resposta = await api.get("tiposEventos");
+            setListaTipoEvento(resposta.data);
         } catch (error) {
             console.log(error);
+
         }
-    }
 
-    async function cadastrarEvento(e) {
-        e.preventDefault();
-
-        if (evento.trim() !== "") {
-            try {
-                await api.post("eventos", { DataEvento: dataEvento, NomeEvento: evento, Descricao: descricao, IdTipoEvento: tipoEvento, IdInstituicao: instituicoes });
-
-                alertar("success", "Cadastro realizado com sucesso")
-                setEvento("");
-                setDataEvento("");
-                setDescricao("");
-                setTipoEvento("");
-
-            } catch (error) {
-                alertar("error", "Erro! Entre em contato com o suporte!")
-                console.log(error);
-
-                console.log({
-                    DataEvento: dataEvento,
-                    NomeEvento: evento,
-                    Descricao: descricao,
-                    IdTipoEvento: tipoEvento,
-                    IdInstituicao: instituicoes
-                });
-            }
-        } else {
-            alertar("warning", "Preencha o campo!")
-        }
-    }
-
-    async function listarEvento() {
-        try {
-            const resposta = await api.get("Eventos");
-
-            setListaEvento(resposta.data);
-        } catch (error) {
-            console.log(error);
-        }
     }
 
     async function deletarEvento(id) {
-        Swal.fire({
-            title: 'Tem Certeza?',
-            text: "Essa ação não poderá ser desfeita!",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#B51D44',
-            cancelButtonColor: '#000000',
-            confirmButtonText: 'Sim, apagar!',
-            cancelButtonText: 'Cancelar',
-        }).then(async (result) => {
-            if (result.isConfirmed) {
-                await api.delete(`eventos/${id.idEvento}`);
-                alertar("success", "Evento Excluido!");
-            }
-        }).catch(error => {
-            console.log(error);
-            alertar("error", "Erro ao Excluir!");
-        })
+        try {
+            const excluirEvento = await api.delete(`eventos/${id.idEvento}`)
+            setExcluirEvento(excluirEvento.data)
+            alertar("success", "deletado com sucesso!");
+        }
+        catch (error) {
+            alertar("error", "Erro ao deletar")
+        }
     }
 
+
+    async function listarEvento() {
+        try {
+            const resposta = await api.get("Eventos")
+            setListaEvento(resposta.data)
+            // listarEvento();
+
+        } catch (error) {
+            console.log(error);
+
+        }
+    }
+
+    function DescricaoEvento(item) {
+        Swal.fire({
+            title: 'Descrição do Evento',
+            text: item.descricao || "Nenhuma descrição disponível",
+            icon: 'info',
+            confirmButtonText: 'Fechar'
+        });
+    }
+
+    async function cadastrarEvento(evt) {
+        evt.preventDefault();
+        if (evento.trim() !== "") {
+            try {
+                await api.post("Eventos", { nomeEvento: evento, idTipoEvento: tipoEvento, dataEvento: dataEvento, descricao: descricao, idInstituicao: instituicao });
+                alertar("success", "Cadastro realizado com sucesso!");
+                setEvento("");
+                setDataEvento();
+                setDescricao("");
+                setTipoEvento("");
+                listarEvento();
+
+            } catch (error) {
+                alertar("error", "Entre em contato com o suporte")
+            }
+        } else {
+            alertar("error", "Preencha o campo vazio")
+
+        }
+    }
+
+
     async function editarEvento(evento) {
+
+        console.log("Dado recebido para edição:", evento);
+
         try {
             const tiposOptions = listaTipoEvento
                 .map(tipo => `<option value="${tipo.idTipoEvento}" ${tipo.idTipoEvento === evento.idTipoEvento ? 'selected' : ''}>${tipo.tituloTipoEvento}</option>`)
                 .join('');
 
             const { value } = await Swal.fire({
-                title: "Editar Tipo de Evento",
+                title: "Editar Evento",
                 html: `
         <input id="campo1" class="swal2-input" placeholder="Título" value="${evento.nomeEvento || ''}">
         <input id="campo2" class="swal2-input" type="date" value="${evento.dataEvento?.substring(0, 10) || ''}">
@@ -143,102 +145,78 @@ const CadastroEvento = () => {
                 console.log("Edição cancelada pelo usuário.");
                 return;
             }
-            await api.put(`eventos/${evento.idEvento}`, {
+
+            console.log("Dados para atualizar:", value);
+
+            await api.put(`Eventos/${evento.idEvento}`, {
                 nomeEvento: value.campo1,
                 dataEvento: value.campo2,
                 idTipoEvento: value.campo3,
                 descricao: value.campo4,
             });
 
-            alertar("Atualizado!", "Dados salvos com sucesso.", "success");
+            console.log("Evento atualizado com sucesso!");
+            Swal.fire("Sucesso!", "Dados salvos com sucesso.", "success");
             listarEvento();
+
         } catch (error) {
-            alertar("Erro!", "Não foi possível atualizar.", "error");
+            console.log("Erro completo:", error);
+            console.log("Resposta do erro:", error.response);
+            Swal.fire("Erro!", "Não foi possível atualizar.", "error");
         }
+
     }
-
-    async function exibirDescricao(id) {
-        try {
-            const resposta = await api.get("eventos");
-            const listateste = resposta.data;
-
-            listateste.forEach(element => {
-                if (element.idEvento === id) {
-                    setDescricao(element.descricao);
-                }
-            });
-            console.log(descricao);
-
-            Swal.fire(descricao);
-            Swal.fire({
-                title: "Descrição Evento",
-                text: descricao,
-            });
-        } catch (error) {
-            console.log(error);
-        }
-    }
-
     useEffect(() => {
-        listarEvento();
         listarTipoEvento();
-    }, [listaEvento]);
+        listarEvento();
+    }, []);
+
 
     return (
-        <>
-            <Header
-                user="Administrador"
-                botao_logar="none"
-            />
+        <Fragment>
+            <Header adm="Administrador" />
             <main>
-                <Cadastro
-                    titulo_cadastro="Cadastro de Eventos"
-                    campo_placeholder="Nome"
-                    campo_descricao="Descrição"
-                    botao="Cadastrar"
-                    banner_img={Imagem}
+                <Cadastro titulo="Cadastro de Evento" placeholder="Nome:"
+                    imagem={banner}
+                    funcCadastro={cadastrarEvento}
 
                     valorInput={evento}
                     setValorInput={setEvento}
 
-                    //Cadastrar evento
-                    funcCadastro={cadastrarEvento}
+                    valorSelect={tipoEvento}
+                    setValorSelect={setTipoEvento}
 
-                    // Obter data
-                    valorData={dataEvento}
-                    setValorData={setDataEvento}
 
-                    //Obter descricao 
-                    valorInputDescricao={descricao}
-                    setValorInputDescricao={setDescricao}
 
-                    // Obter TipoEvento 
-                    valorTpEvento={tipoEvento}
-                    setValorTpEvento={setTipoEvento}
+                    setValorText={setDescricao}
+                    valorText={descricao}
 
-                    // Obter Instituições
-                    valorInstituicao={instituicoes}
-                    setValorInstituicao={setInstituicoes}
+                    setValorSelect1={setInstituicao}
+                    valorSelect1={instituicao}
 
-                    // Listar TipoEvento
+                    setValorDate={setDataEvento}
+                    valorDate={dataEvento}
+
                     lista={listaTipoEvento}
+
+
                 />
 
-                <Lista
-                    titulo_lista="Eventos"
-                    titulo="Nome"
-
-                    tipoLista="Eventos"
+                <Listagem tituloLista="Lista eventos"
                     lista={listaEvento}
-
-                    funcDeletar={deletarEvento}
+                    tipoLista="Eventos"
+                    funcExcluir={deletarEvento}
                     funcEditar={editarEvento}
-                    funcDescricao={exibirDescricao}
+                    funcDescricao={DescricaoEvento}
+                    tipo="Data Evento"
+                // funcEditar={editarEvento}/
+
                 />
             </main>
+
             <Footer />
-        </>
+        </Fragment>
     )
 }
 
-export default CadastroEvento;
+export default Cadastrar;
